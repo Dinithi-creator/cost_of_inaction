@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cost of Inaction — IFS Copperleaf</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --purple: #5b2d8e;
+    --purple-deep: #3b1a6e;
+    --purple-dark: #1e0a40;
+    --purple-mid: #6d35a8;
+    --purple-light: #9b6dd1;
+    --purple-pale: #ede8f8;
+    --purple-soft: #f5f0fc;
+    --purple-accent: #a259e6;
+    --white: #ffffff;
+    --off-white: #f8f6fc;
+    --border: #e4ddf5;
+    --text: #1a1a2e;
+    --muted: #6b6480;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font); color: var(--text); background: var(--white); line-height: 1.6; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.97); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; }
+  .nav-logo-icon { width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(var(--purple-light), var(--purple-deep), var(--purple-light)); display: flex; align-items: center; justify-content: center; }
+  .nav-logo-icon::after { content: '✦'; color: white; font-size: 0.85rem; }
+  .nav-logo-text { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+  .nav-logo-text span { color: var(--purple); }
+  .nav-links { display: flex; gap: 24px; list-style: none; align-items: center; }
+  .nav-links a { text-decoration: none; font-size: 0.82rem; color: var(--muted); font-weight: 500; transition: color .2s; }
+  .nav-links a:hover { color: var(--purple); }
+  .btn-primary { display: inline-block; background: var(--purple-dark); color: #fff; padding: 12px 26px; border-radius: 50px; font-weight: 700; font-size: 0.88rem; text-decoration: none; transition: background .2s, transform .15s; border: none; cursor: pointer; }
+  .btn-primary:hover { background: var(--purple-mid); transform: translateY(-1px); }
+  .btn-secondary { display: inline-block; border: 2px solid rgba(255,255,255,0.4); color: #fff; padding: 12px 26px; border-radius: 50px; font-weight: 600; font-size: 0.88rem; text-decoration: none; transition: all .2s; margin-left: 12px; }
+  .btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
+  .btn-link { font-size: 0.85rem; font-weight: 700; color: var(--purple); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+  .btn-link:hover { text-decoration: underline; }
+
+  /* HERO */
+  .hero { position: relative; overflow: hidden; min-height: 540px; display: flex; align-items: center; background: linear-gradient(135deg, #1a0838 0%, #2d1065 40%, #4a1a8a 70%, #6b35b5 100%); }
+  .hero-bg { position: absolute; inset: 0; background-image: url('https://d6a9a6a4.delivery.rocketcdn.me/wp-content/uploads/2026/02/LinkedIn-Blog-Banner-1920x500.png'); background-size: cover; background-position: center; opacity: 0.22; }
+  .hero-streaks { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .streak { position: absolute; height: 1px; opacity: 0.35; background: linear-gradient(90deg, transparent, var(--purple-light), transparent); }
+  .s1 { width: 60%; top: 30%; left: 40%; transform: rotate(-15deg); }
+  .s2 { width: 40%; top: 50%; left: 55%; transform: rotate(-10deg); opacity: 0.2; }
+  .s3 { width: 50%; top: 20%; left: 45%; transform: rotate(-20deg); opacity: 0.18; }
+  .hero-content { position: relative; max-width: 1160px; margin: 0 auto; padding: 90px 48px; }
+  .eyebrow { display: inline-block; border: 1px solid rgba(162,89,230,0.5); color: var(--purple-light); font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; background: rgba(162,89,230,0.1); }
+  .hero h1 { font-size: clamp(2.2rem, 4.5vw, 3.5rem); font-weight: 800; color: #fff; line-height: 1.1; max-width: 660px; margin-bottom: 20px; letter-spacing: -0.5px; }
+  .hero h1 em { color: var(--purple-light); font-style: normal; }
+  .hero p { font-size: 1.05rem; color: rgba(255,255,255,0.72); max-width: 520px; margin-bottom: 40px; line-height: 1.7; }
+  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  /* SECTIONS */
+  section { padding: 80px 48px; }
+  .container { max-width: 1160px; margin: 0 auto; }
+  .section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--purple); margin-bottom: 12px; }
+  .section-title { font-size: clamp(1.6rem, 3vw, 2.3rem); font-weight: 800; color: var(--text); letter-spacing: -0.4px; margin-bottom: 14px; line-height: 1.2; }
+  .section-title em { color: var(--purple); font-style: normal; }
+  .section-sub { font-size: 0.95rem; color: var(--muted); max-width: 620px; margin-bottom: 48px; line-height: 1.7; }
+  .divider { height: 1px; background: var(--border); max-width: 1160px; margin: 0 auto; }
+
+  /* STAT BAR */
+  .stat-bar { background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple-deep) 100%); padding: 36px 48px; }
+  .stat-bar-inner { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 32px; }
+  .stat { text-align: center; padding: 0 20px; }
+  .stat + .stat { border-left: 1px solid rgba(255,255,255,0.1); }
+  .stat-num { font-size: 2.6rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1; }
+  .stat-label { font-size: 0.82rem; color: rgba(255,255,255,0.55); margin-top: 8px; line-height: 1.5; }
+
+  /* CAMPAIGN OVERVIEW */
+  .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+  .glance-list { list-style: none; padding: 0; }
+  .glance-list li { font-size: 0.9rem; color: var(--text); padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; line-height: 1.5; }
+  .glance-list li::before { content: '•'; color: var(--purple); font-weight: 900; flex-shrink: 0; }
+  .targeting-list { display: flex; flex-direction: column; gap: 12px; }
+  .target-item { display: flex; align-items: flex-start; gap: 16px; }
+  .target-badge { width: 36px; height: 44px; background: var(--purple); color: #fff; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%); }
+  .target-text { font-size: 0.88rem; color: var(--text); line-height: 1.55; padding-top: 4px; }
+  .overview-narrative { margin-top: 40px; padding: 24px 28px; background: var(--purple-soft); border-left: 3px solid var(--purple); border-radius: 0 10px 10px 0; font-size: 0.95rem; color: var(--text); line-height: 1.75; }
+
+  /* CHALLENGES — connector line style */
+  .challenges-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 0; margin-bottom: 40px; position: relative; }
+  .challenges-row::before { content: ''; position: absolute; top: 24px; left: 10%; right: 10%; height: 3px; background: var(--purple); z-index: 0; }
+  .challenge-col { padding: 0 20px; text-align: left; }
+  .challenge-icon-wrap { display: flex; justify-content: center; margin-bottom: 20px; position: relative; z-index: 1; }
+  .challenge-icon { width: 48px; height: 48px; background: var(--purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; }
+  .challenge-col h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .challenge-col p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+  .challenges-row-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 0; position: relative; }
+  .challenges-row-2::before { content: ''; position: absolute; top: 24px; left: 15%; right: 15%; height: 3px; background: var(--purple); z-index: 0; }
+
+  /* KEY MESSAGES — same connector style */
+  .messages-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 0; position: relative; }
+  .messages-row::before { content: ''; position: absolute; top: 24px; left: 10%; right: 10%; height: 3px; background: var(--purple); z-index: 0; }
+  .msg-col { padding: 0 24px; }
+  .msg-icon-wrap { display: flex; justify-content: center; margin-bottom: 20px; position: relative; z-index: 1; }
+  .msg-icon { width: 48px; height: 48px; background: var(--purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff; }
+  .msg-col h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .msg-col p { font-size: 0.85rem; color: var(--muted); line-height: 1.75; }
+
+  /* BLOG CARDS */
+  .blog-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 28px; }
+  .blog-card { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: box-shadow .25s, transform .2s; background: var(--white); }
+  .blog-card:hover { box-shadow: 0 14px 48px rgba(91,45,142,0.12); transform: translateY(-3px); }
+  .blog-img { width: 100%; height: 200px; object-fit: cover; display: block; }
+  .blog-body { padding: 26px; }
+  .blog-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--purple); }
+  .blog-card h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 8px 0 10px; line-height: 1.4; }
+  .blog-card p { font-size: 0.875rem; color: var(--muted); margin-bottom: 18px; line-height: 1.7; }
+
+  /* WHITEPAPER */
+  .wp-block { background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple-deep) 60%, var(--purple-mid) 100%); border-radius: 20px; padding: 56px; display: flex; gap: 48px; align-items: center; flex-wrap: wrap; }
+  .wp-text { flex: 1; min-width: 260px; }
+  .wp-text .section-label { color: rgba(255,255,255,0.45); }
+  .wp-text h2 { font-size: 1.65rem; font-weight: 800; color: #fff; margin-bottom: 14px; line-height: 1.25; }
+  .wp-text p { color: rgba(255,255,255,0.65); font-size: 0.95rem; margin-bottom: 28px; line-height: 1.7; }
+  .wp-badge { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 30px; text-align: center; min-width: 200px; }
+  .wp-icon { font-size: 2.6rem; margin-bottom: 10px; }
+  .wp-badge p { color: rgba(255,255,255,0.5); font-size: 0.82rem; margin-bottom: 16px; line-height: 1.5; }
+
+  /* ACTIVATION FLOW */
+  .flow-funnel { display: flex; flex-direction: column; gap: 10px; max-width: 780px; }
+  .flow-item { display: flex; align-items: flex-start; gap: 20px; }
+  .flow-chevron { width: 52px; height: 58px; background: var(--purple-pale); border: 2px solid var(--purple-light); color: var(--purple); font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%); transition: background .2s; }
+  .flow-item:hover .flow-chevron { background: var(--purple); color: #fff; }
+  .flow-body { padding-top: 4px; padding-bottom: 16px; border-bottom: 1px solid var(--border); flex: 1; }
+  .flow-item:last-child .flow-body { border-bottom: none; }
+  .flow-stage { font-size: 0.72rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--purple); margin-bottom: 4px; }
+  .flow-label { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .flow-detail { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+  .flow-detail span { font-weight: 600; color: var(--text); }
+  .funnel-legend { display: flex; gap: 28px; margin-top: 28px; }
+  .legend-dot { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); font-weight: 500; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-blue { background: #6699ff; }
+  .dot-gold { background: #c8a020; }
+  .dot-red { background: #e05050; }
+
+  /* MARKETO / EMAIL */
+  .email-cols { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; margin-bottom: 28px; }
+  .email-col { border: 1px solid var(--border); border-radius: 14px; padding: 28px; background: var(--white); }
+  .email-stage-label { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .email-col h3 { font-size: 1rem; font-weight: 700; color: var(--purple); margin-bottom: 10px; }
+  .email-col p { font-size: 0.83rem; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
+  .email-list { list-style: none; padding: 0; margin-bottom: 14px; }
+  .email-list li { font-size: 0.82rem; color: var(--text); padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+  .email-list li::before { content: '•'; color: var(--purple); flex-shrink: 0; }
+  .email-list li:last-child { border-bottom: none; }
+  .trigger-text { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+  .email-note { background: var(--purple-soft); border-left: 3px solid var(--purple); padding: 16px 20px; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: var(--text); line-height: 1.65; }
+
+  /* PERSONAS */
+  .persona-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
+  .persona-tab { padding: 10px 22px; border-radius: 50px; font-size: 0.83rem; font-weight: 600; border: 1.5px solid var(--border); color: var(--muted); cursor: pointer; transition: all .2s; background: var(--white); }
+  .persona-tab.active, .persona-tab:hover { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .persona-panel { display: none; }
+  .persona-panel.active { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .p-card { background: var(--off-white); border-radius: 14px; padding: 26px; border: 1px solid var(--border); }
+  .p-card h4 { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+  .p-label { font-size: 0.68rem; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; margin-top: 14px; }
+  .p-item { font-size: 0.82rem; color: var(--muted); padding: 6px 0; border-bottom: 1px solid var(--border); line-height: 1.5; }
+  .p-item:last-child { border-bottom: none; }
+
+  /* CAMPAIGN CALENDAR */
+  .cal-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .cal-table thead th { text-align: left; padding: 12px 16px; background: var(--purple-soft); color: var(--text); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.3px; border-bottom: 2px solid var(--border); }
+  .cal-table tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  .cal-table tbody tr:hover { background: var(--purple-soft); }
+  .cal-table td { padding: 12px 16px; color: var(--text); vertical-align: middle; }
+  .cal-table td:first-child { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-right: 4px; }
+  .tag-website { background: #e8e0ff; color: var(--purple); }
+  .tag-linkedin { background: #dce8ff; color: #2255aa; }
+  .tag-demandbase { background: #ffe8f0; color: #aa2255; }
+
+  /* REGIONAL */
+  .region-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; margin-bottom: 28px; }
+  .region-card { border: 1px solid var(--border); border-radius: 14px; padding: 28px; background: var(--white); }
+  .region-card h3 { font-size: 1rem; font-weight: 800; color: var(--purple); margin-bottom: 8px; }
+  .region-focus { font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; line-height: 1.6; font-style: italic; }
+  .region-list { list-style: none; padding: 0; margin-bottom: 16px; }
+  .region-list li { font-size: 0.82rem; color: var(--text); padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; line-height: 1.5; }
+  .region-list li::before { content: '→'; color: var(--purple); flex-shrink: 0; font-size: 0.75rem; margin-top: 2px; }
+  .region-list li:last-child { border-bottom: none; }
+  .region-tip { font-size: 0.8rem; color: var(--purple); font-weight: 600; }
+  .region-note { background: var(--purple-soft); border-left: 3px solid var(--purple); padding: 16px 20px; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: var(--text); line-height: 1.65; }
+
+  /* ASSETS */
+  .assets-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .asset-link { display: flex; align-items: center; gap: 14px; padding: 18px 20px; background: var(--white); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; transition: all .2s; }
+  .asset-link:hover { border-color: var(--purple); background: var(--purple-pale); }
+  .asset-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .asset-text { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+  .asset-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* NARRATIVE */
+  .narrative { background: linear-gradient(160deg, var(--purple-dark) 0%, #2a0d5e 50%, var(--purple-deep) 100%); text-align: center; padding: 96px 48px; position: relative; overflow: hidden; }
+  .narrative::before { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(162,89,230,0.15) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+  .narrative-inner { position: relative; max-width: 780px; margin: 0 auto; }
+  .narrative blockquote { font-size: clamp(1.15rem, 2.2vw, 1.65rem); font-weight: 300; line-height: 1.8; color: rgba(255,255,255,0.85); margin-bottom: 36px; }
+  .narrative blockquote strong { color: var(--purple-light); font-weight: 700; }
+  .narrative .kicker { color: rgba(255,255,255,0.45); font-size: 0.95rem; margin-bottom: 36px; }
+
+  /* FOOTER */
+  footer { background: #0d0520; padding: 32px 48px; }
+  .footer-inner { max-width: 1160px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .footer-logo { font-weight: 700; color: #fff; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+  .footer-logo span { color: var(--purple-light); }
+  footer p { font-size: 0.78rem; color: rgba(255,255,255,0.3); }
+
+  @media (max-width: 900px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    section { padding: 56px 20px; }
+    .stat-bar { padding: 28px 20px; }
+    .stat-bar-inner { grid-template-columns: 1fr; gap: 20px; }
+    .stat + .stat { border-left: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
+    .overview-grid, .blog-grid, .email-cols, .region-grid, .assets-grid { grid-template-columns: 1fr; }
+    .challenges-row, .challenges-row-2, .messages-row { grid-template-columns: 1fr; }
+    .challenges-row::before, .challenges-row-2::before, .messages-row::before { display: none; }
+    .persona-panel.active { grid-template-columns: 1fr; }
+    .wp-block { padding: 36px 24px; flex-direction: column; }
+    .hero-content { padding: 60px 20px; }
+    .footer-inner { flex-direction: column; text-align: center; }
+    .funnel-legend { flex-direction: column; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="password-gate" style="position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #1a0838 0%, #2d1065 40%, #4a1a8a 70%, #6b35b5 100%); font-family:'Segoe UI', system-ui, -apple-system, sans-serif;">
+  <div style="background:#fff; border-radius:16px; padding:48px 40px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.35); text-align:center;">
+    <div style="width:48px; height:48px; margin:0 auto 20px; border-radius:50%; background:conic-gradient(#9b6dd1, #3b1a6e, #9b6dd1); display:flex; align-items:center; justify-content:center;">
+      <span style="color:#fff; font-size:1.1rem;">✦</span>
+    </div>
+    <h1 style="font-size:1.15rem; font-weight:800; color:#1a1a2e; margin-bottom:6px;">IFS <span style="color:#5b2d8e;">Copperleaf</span></h1>
+    <p style="font-size:0.85rem; color:#6b6480; margin-bottom:24px;">This page is password protected. Please enter the password to continue.</p>
+    <input id="password-input" type="password" placeholder="Enter password" style="width:100%; padding:12px 14px; border:1px solid #e4ddf5; border-radius:8px; font-size:0.9rem; margin-bottom:12px; outline:none; box-sizing:border-box;" />
+    <button id="password-submit" style="width:100%; background:#1e0a40; color:#fff; padding:12px 0; border:none; border-radius:50px; font-weight:700; font-size:0.9rem; cursor:pointer; transition:background .2s;">Unlock</button>
+    <p id="password-error" style="display:none; color:#c0392b; font-size:0.8rem; margin-top:12px;">Incorrect password. Please try again.</p>
+  </div>
+</div>
+
+<div id="page-content" style="display:none;">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon"></div>
+    <div class="nav-logo-text">IFS <span>Copperleaf</span></div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#challenges">Challenges</a></li>
+    <li><a href="#messages">Messages</a></li>
+    <li><a href="#content">Content</a></li>
+    <li><a href="#activation">Activation</a></li>
+    <li><a href="#calendar">Calendar</a></li>
+    <li><a href="#regional">Regional</a></li>
+    <li><a href="#assets">Assets</a></li>
+    <li><a href="https://www.copperleaf.com/knowledge-hub/cost-of-delaying-asset-investment-planning/" target="_blank"><button class="btn-primary" style="padding:9px 20px;font-size:0.8rem;">Download Whitepaper</button></a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" style="padding:0;">
+  <div class="hero-bg"></div>
+  <div class="hero-streaks"><div class="streak s1"></div><div class="streak s2"></div><div class="streak s3"></div></div>
+  <div class="hero-content">
+    <div class="eyebrow">2026 Campaign · Always-On · Europe (primary) + AMER</div>
+    <h1>The <em>Cost of Inaction</em><br/>Is Not Zero</h1>
+    <p>Reframing "doing nothing" as the most expensive decision organizations can make — positioning IFS Copperleaf as the authority in AI-powered Asset Investment Planning.</p>
+    <div class="hero-ctas">
+      <a href="https://www.copperleaf.com/knowledge-hub/cost-of-delaying-asset-investment-planning/" target="_blank" class="btn-primary">Download the Whitepaper</a>
+      <a href="#overview" class="btn-secondary">Explore the Campaign</a>
+    </div>
+  </div>
+</section>
+
+<!-- STAT BAR -->
+<div class="stat-bar">
+  <div class="stat-bar-inner">
+    <div class="stat"><div class="stat-num">3×</div><div class="stat-label">Risk exposure compounds each year of delay</div></div>
+    <div class="stat"><div class="stat-num">$M+</div><div class="stat-label">Lost annually through spreadsheet-led planning</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Of delayed decisions have a measurable cost</div></div>
+  </div>
+</div>
+
+<!-- CAMPAIGN OVERVIEW -->
+<section id="overview">
+  <div class="container">
+    <div class="section-label">Campaign Overview</div>
+    <h2 class="section-title">Global Cost of Inaction</h2>
+    <div class="overview-grid">
+      <div>
+        <p style="font-size:0.82rem;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;">Campaign at a Glance</p>
+        <ul class="glance-list">
+          <li><strong>Campaign Name:</strong>&nbsp;Cost of Inaction Campaign</li>
+          <li><strong>Objective:</strong>&nbsp;Brand Awareness</li>
+          <li><strong>Duration:</strong>&nbsp;Always-On, Full Year 2026</li>
+          <li><strong>Regions:</strong>&nbsp;Europe (primary), AMER</li>
+          <li><strong>Sub-verticals:</strong>&nbsp;Energy &amp; Utilities, Oil &amp; Gas, Transportation &amp; Infrastructure, Water &amp; Wastewater, Rail &amp; Transit</li>
+          <li><strong>Solution:</strong>&nbsp;IFS Copperleaf AIP (Asset Investment Planning) + IFS ALM Platform Integration</li>
+          <li><strong>Regional Relevance:</strong>&nbsp;Europe (primary), AMER</li>
+        </ul>
+      </div>
+      <div>
+        <p style="font-size:0.82rem;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;">Who We're Targeting</p>
+        <div class="targeting-list">
+          <div class="target-item">
+            <div class="target-badge">1</div>
+            <div class="target-text"><strong>C-suite &amp; Strategy Leaders</strong> — CEO, CFO, COO, CIO, Chief Transformation Officer</div>
+          </div>
+          <div class="target-item">
+            <div class="target-badge">2</div>
+            <div class="target-text"><strong>Asset &amp; Capital Leaders</strong> — SVP/VP Asset Management, Capital Planning, Infrastructure Investment</div>
+          </div>
+          <div class="target-item">
+            <div class="target-badge">3</div>
+            <div class="target-text"><strong>Finance &amp; Regulatory Executives</strong> — CFO, VP Finance, Risk, Compliance, Audit, Rate Case Leaders</div>
+          </div>
+          <div class="target-item">
+            <div class="target-badge">4</div>
+            <div class="target-text"><strong>Sustainability &amp; ESG Leaders</strong> — CSO, ESG &amp; Reporting Officers, Net Zero Programme Leads</div>
+          </div>
+          <div class="target-item">
+            <div class="target-badge">5</div>
+            <div class="target-text"><strong>Operations &amp; Maintenance Leaders</strong> — COO, Directors of Engineering &amp; Maintenance</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="overview-narrative">The Cost of Inaction campaign highlights the risks of delaying capital planning, reframing inaction as a decision that erodes value and increases risk — positioning IFS Copperleaf as the authority in AI-powered Asset Investment Planning.</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- KEY INDUSTRY CHALLENGES -->
+<section id="challenges" style="background:var(--off-white);">
+  <div class="container">
+    <div class="section-label">Industry Context</div>
+    <h2 class="section-title">Key Industry Challenges We're Addressing</h2>
+    <p class="section-sub" style="margin-bottom:52px;"></p>
+    <div class="challenges-row">
+      <div class="challenge-col">
+        <div class="challenge-icon-wrap"><div class="challenge-icon">⚠️</div></div>
+        <h3>Delayed Capital Decisions</h3>
+        <p>Delayed capital decisions increase operational risk, OPEX, and asset failures — compounding costs and exposing organisations to avoidable incidents and regulatory scrutiny.</p>
+      </div>
+      <div class="challenge-col">
+        <div class="challenge-icon-wrap"><div class="challenge-icon">📋</div></div>
+        <h3>Spreadsheet-Driven Planning</h3>
+        <p>Spreadsheet-driven planning creates inefficiencies, rework, and approval delays — slowing decision-making and undermining investment confidence across the organisation.</p>
+      </div>
+      <div class="challenge-col">
+        <div class="challenge-icon-wrap"><div class="challenge-icon">📈</div></div>
+        <h3>Weak Traceability and Board Confidence</h3>
+        <p>Weak traceability undermines board confidence, audit readiness, and regulatory defensibility — leaving organisations unable to justify capital allocations under scrutiny.</p>
+      </div>
+    </div>
+    <div style="height:40px;"></div>
+    <div class="challenges-row-2">
+      <div class="challenge-col">
+        <div class="challenge-icon-wrap"><div class="challenge-icon">🌿</div></div>
+        <h3>ESG and Regulatory Requirements Evolving Faster Than Legacy Tools</h3>
+        <p>ESG and regulatory requirements are evolving faster than legacy planning tools can support — creating compliance gaps and increasing the risk of missed sustainability commitments.</p>
+      </div>
+      <div class="challenge-col">
+        <div class="challenge-icon-wrap"><div class="challenge-icon">🛡️</div></div>
+        <h3>Unclear ROI on Capital Investments</h3>
+        <p>Without a clear link between spend and outcomes, capital is routinely allocated to the wrong projects — resulting in value leakage, missed targets, and eroded stakeholder confidence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 3 KEY MESSAGES -->
+<section id="messages">
+  <div class="container">
+    <div class="section-label">Campaign Messaging</div>
+    <h2 class="section-title">Our 3 Key Campaign Messages</h2>
+    <p class="section-sub">Three key messages to guide all campaign communications.</p>
+    <div class="messages-row">
+      <div class="msg-col">
+        <div class="msg-icon-wrap"><div class="msg-icon">⚠️</div></div>
+        <h3>Inaction Is Expensive</h3>
+        <p>Every year of delay compounds value loss, risk exposure, and inefficiency. The cost of doing nothing is not zero — it is a growing liability that erodes capital efficiency, increases operational risk, and undermines board and regulatory confidence.</p>
+      </div>
+      <div class="msg-col">
+        <div class="msg-icon-wrap"><div class="msg-icon">📊</div></div>
+        <h3>Spreadsheets Are Not Neutral</h3>
+        <p>Manual planning hides risk, slows decisions, and quietly erodes ROI. Spreadsheet-driven capital planning creates a false sense of control while compounding inefficiency, misalignment, and exposure across the asset portfolio.</p>
+      </div>
+      <div class="msg-col">
+        <div class="msg-icon-wrap"><div class="msg-icon">⚡</div></div>
+        <h3>Modern AIP Turns Urgency Into Advantage</h3>
+        <p>IFS Copperleaf transforms the cost of inaction into a compelling case for change — quantifying hidden costs, defending decisions, and enabling organisations to act with confidence, speed, and strategic clarity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BLOG CONTENT -->
+<section id="content" style="background:var(--off-white);">
+  <div class="container">
+    <div class="section-label">Blog Series</div>
+    <h2 class="section-title">Build the Case for Change</h2>
+    <p class="section-sub">Use these assets to move prospects from awareness to urgency — at every stage of the funnel.</p>
+    <div class="blog-grid">
+      <div class="blog-card">
+        <img class="blog-img" src="https://d6a9a6a4.delivery.rocketcdn.me/wp-content/uploads/2026/02/sandglass-table-1920x500.jpg" alt="Blog 1" loading="lazy"/>
+        <div class="blog-body">
+          <div class="blog-tag">Blog 01 · Capital Planning · Awareness</div>
+          <h3>The Cost of Inaction: Why Standing Still Is the Riskiest Decision You Can Make</h3>
+          <p>Organizations that delay modernizing capital planning aren't holding position — they're actively choosing to fall behind competitors, regulators, and stakeholders.</p>
+          <a href="https://www.copperleaf.com/blog/the-cost-of-inaction-in-capital-planning-why-standing-still-is-risky/" target="_blank" class="btn-link">Read Article →</a>
+        </div>
+      </div>
+      <div class="blog-card">
+        <img class="blog-img" src="https://d6a9a6a4.delivery.rocketcdn.me/wp-content/uploads/2026/03/black-white-photo-hourglass-close-up-1920x500.jpg" alt="Blog 2" loading="lazy"/>
+        <div class="blog-body">
+          <div class="blog-tag">Blog 02 · Spreadsheets · ROI</div>
+          <h3>Why Spreadsheets Are Silently Costing You Millions</h3>
+          <p>The real cost of spreadsheet-based planning isn't just inefficiency — it's the decisions never made, the risks never surfaced, and the capital never optimized.</p>
+          <a href="https://www.copperleaf.com/blog/hidden-cost-spreadsheets-capital-planning/" target="_blank" class="btn-link">Read Article →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHITEPAPER -->
+<section>
+  <div class="container">
+    <div class="section-label">Main Asset</div>
+    <h2 class="section-title">The Definitive Guide to <em>Smarter Capital Planning</em></h2>
+    <p class="section-sub">Our flagship whitepaper quantifies the cost of delay and makes the business case for modern asset investment planning.</p>
+    <div class="wp-block">
+      <div class="wp-text">
+        <div class="section-label">Featured Whitepaper</div>
+        <h2>Cost of Delaying Asset Investment Planning</h2>
+        <p>A research-backed guide for strategic and operational leaders across utilities, energy, transport, and infrastructure — exploring how delayed investment decisions translate into measurable financial, operational, and regulatory risk.</p>
+        <a href="https://www.copperleaf.com/knowledge-hub/cost-of-delaying-asset-investment-planning/" target="_blank" class="btn-primary">Download the Whitepaper</a>
+      </div>
+      <div>
+        <div class="wp-badge">
+          <div class="wp-icon">📄</div>
+          <p>Featured Whitepaper<br/>Free Download</p>
+          <a href="https://www.copperleaf.com/knowledge-hub/cost-of-delaying-asset-investment-planning/" target="_blank" class="btn-primary" style="font-size:0.82rem;padding:10px 22px;">Get It Now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PERSONAS -->
+<section id="personas" style="background:var(--off-white);">
+  <div class="container">
+    <div class="section-label">Target Audience</div>
+    <h2 class="section-title">One Problem. <em>Every Leader Feels It.</em></h2>
+    <p class="section-sub">Select a persona group to explore the specific challenges, key questions, and business impacts driving their urgency.</p>
+    <div class="persona-tabs">
+      <button class="persona-tab active" onclick="showPersona('exec',this)">Executive &amp; Strategic</button>
+      <button class="persona-tab" onclick="showPersona('planning',this)">Strategic &amp; Planning</button>
+      <button class="persona-tab" onclick="showPersona('ops',this)">Operational &amp; Technical</button>
+    </div>
+    <div id="exec" class="persona-panel active">
+      <div class="p-card">
+        <h4>CEO / Managing Director</h4>
+        <div class="p-label">Key Question</div>
+        <div class="p-item">"Are we investing in the right things for long-term resilience and regulatory outcomes?"</div>
+        <div class="p-label">Challenges</div>
+        <div class="p-item">No visibility into long-term risk</div>
+        <div class="p-item">Difficulty aligning capital with ESG</div>
+        <div class="p-item">Weak regulatory defensibility</div>
+        <div class="p-label">Business Impact</div>
+        <div class="p-item">Delayed approvals · Missed ESG targets · Eroded trust</div>
+      </div>
+      <div class="p-card">
+        <h4>CFO</h4>
+        <div class="p-label">Key Question</div>
+        <div class="p-item">"How do I justify capital spend and demonstrate ROI to the board?"</div>
+        <div class="p-label">Challenges</div>
+        <div class="p-item">Trade-offs between cost, risk &amp; value unclear</div>
+        <div class="p-item">Pressure to cut capex without visibility</div>
+        <div class="p-item">No quantifiable risk baseline</div>
+        <div class="p-label">Business Impact</div>
+        <div class="p-item">Budget overruns · Undefended decisions · Audit risk</div>
+      </div>
+      <div class="p-card">
+        <h4>COO / CTO / CIO</h4>
+        <div class="p-label">Key Question</div>
+        <div class="p-item">"How do we align operational priorities with strategic investment plans?"</div>
+        <div class="p-label">Challenges</div>
+        <div class="p-item">Siloed data across systems</div>
+        <div class="p-item">Reactive vs proactive planning cycles</div>
+        <div class="p-item">Technology debt slowing decisions</div>
+        <div class="p-label">Business Impact</div>
+        <div class="p-item">Operational inefficiency · Missed targets · Cost blowouts</div>
+      </div>
+    </div>
+    <div id="planning" class="persona-panel">
+      <div class="p-card">
+        <h4>VP / Director — Asset Management</h4>
+        <div class="p-label">Key Question</div>
+        <div class="p-item">"How do I build a capital plan that leadership will actually fund?"</div>
+        <div class="p-label">Challenges</div>
+        <div class="p-item">Translating risk into financial terms</div>
+        <div class="p-item">Competing priorities across portfolios</div>
+        <div class="p-item">Manual consolidation of asset data</div>
+        <div class="p-label">Business Impact</div>
+        <div class="p-item">Underfunded plans · Misaligned priorities · Wasted cycles</div>
+      </div>
+      <div class="p-card">
+        <h4>Head of Capital Planning</h4>
+        <div class="p-label">Key Question</div>
+        <div class="p-item">"How do I optimize spend across constrained budgets?"</div>
+        <div class="p-label">Challenges</div>
+        <div class="p-item">Spreadsheet-led processes create blind spots</div>
+        <div class="p-item">No scenario modeling capability</div>
+        <div class="p-item">Stakeholder alignment is slow and fragile</div>
+        <div class="p-label">Business Impact</div>
+        <div class="p-item">Suboptimal plans · Slow cycles · Rework costs</div>
+      </div>
+      <div class="p-card">
+        <h4>Regulatory / Strategy Lead</h4>
+        <div class="p-label">Key Question</div>
+        <div class="p-item">"Can we defend our investment strategy to regulators?"</div>
+        <div class="p-label">Challenges</div>
+        <div class="p-item">Inconsistent value definitions across plans</div>
+        <div class="p-item">Regulatory submissions lack evidence</div>
+        <div class="p-item">Strategy misaligned with approved outcomes</div>
+        <div class="p-label">Business Impact</div>
+        <div class="p-item">Failed submissions · Penalties · Lost trust</div>
+      </div>
+    </div>
+    <div id="ops" class="persona-panel">
+      <div class="p-card">
+        <h4>Asset Manager</h4>
+        <div class="p-label">Key Question</div>
+        <div class="p-item">"How do I prioritize work when everything feels urgent?"</div>
+        <div class="p-label">Challenges</div>
+        <div class="p-item">No risk-ranked work prioritization</div>
+        <div class="p-item">Poor visibility into interdependencies</div>
+        <div class="p-item">Too much time justifying decisions</div>
+        <div class="p-label">Business Impact</div>
+        <div class="p-item">Wrong work done first · Avoidable failures · Inefficiency</div>
+      </div>
+      <div class="p-card">
+        <h4>Engineering / Reliability Lead</h4>
+        <div class="p-label">Key Question</div>
+        <div class="p-item">"How do I make the case for critical infrastructure investment?"</div>
+        <div class="p-label">Challenges</div>
+        <div class="p-item">Technical risk not translated to business impact</div>
+        <div class="p-item">Deferred maintenance accumulating</div>
+        <div class="p-item">No shared language with finance</div>
+        <div class="p-label">Business Impact</div>
+        <div class="p-item">Underfunded assets · Increased failures · Safety risk</div>
+      </div>
+      <div class="p-card">
+        <h4>Risk &amp; Compliance Manager</h4>
+        <div class="p-label">Key Question</div>
+        <div class="p-item">"How do we ensure our investment plan addresses compliance risk?"</div>
+        <div class="p-label">Challenges</div>
+        <div class="p-item">Risk not consistently quantified or ranked</div>
+        <div class="p-item">Compliance gaps missed in planning cycles</div>
+        <div class="p-item">No audit trail for investment decisions</div>
+        <div class="p-label">Business Impact</div>
+        <div class="p-item">Regulatory exposure · Penalties · Reputational damage</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CAMPAIGN ACTIVATION FLOW -->
+<section id="activation">
+  <div class="container">
+    <div class="section-label">Campaign Activation</div>
+    <h2 class="section-title">Campaign Activation Flow</h2>
+    <p class="section-sub">A step-by-step journey from awareness to conversion.</p>
+    <div class="flow-funnel">
+      <div class="flow-item">
+        <div class="flow-chevron">📢</div>
+        <div class="flow-body">
+          <div class="flow-stage">Awareness</div>
+          <div class="flow-label">Paid &amp; Organic Ads</div>
+          <div class="flow-detail"><span>Assets used:</span> LinkedIn Paid Social, LinkedIn Organic, Demandbase Programmatic Display</div>
+          <div class="flow-detail"><span>Goal:</span> Drive targeted traffic to Cost of Inaction landing page and white paper</div>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-chevron">📖</div>
+        <div class="flow-body">
+          <div class="flow-stage">Educate</div>
+          <div class="flow-label">Blogs &amp; Carousels</div>
+          <div class="flow-detail"><span>Assets used:</span> 4-blog series (SourceCode designed), 4 LinkedIn Carousels, Folice Landing Page</div>
+          <div class="flow-detail"><span>Goal:</span> Build credibility and educate on the hidden costs of manual capital planning</div>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-chevron">📥</div>
+        <div class="flow-body">
+          <div class="flow-stage">Engage</div>
+          <div class="flow-label">Gated Content</div>
+          <div class="flow-detail"><span>Assets used:</span> Cost of Inaction White Paper (gated), Folice Landing Page</div>
+          <div class="flow-detail"><span>Goal:</span> Capture leads and qualify intent — target: 80 downloads</div>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-chevron">✉️</div>
+        <div class="flow-body">
+          <div class="flow-stage">Nurture</div>
+          <div class="flow-label">Email Nurture</div>
+          <div class="flow-detail"><span>Assets used:</span> Marketo Lead Nurture Stream (6 emails), Executive Brief (2nd/3rd email attachment)</div>
+          <div class="flow-detail"><span>Goal:</span> Deepen engagement — target: 70% email open rate</div>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-chevron">🤝</div>
+        <div class="flow-body">
+          <div class="flow-stage">Convert</div>
+          <div class="flow-label">Demo &amp; Sales</div>
+          <div class="flow-detail"><span>Assets used:</span> ROI tools, Impact Estimator, Regional ABM, Demo CTAs</div>
+          <div class="flow-detail"><span>Goal:</span> Convert MQLs to sales conversations</div>
+        </div>
+      </div>
+    </div>
+    <div class="funnel-legend">
+      <div class="legend-dot"><div class="dot dot-blue"></div>TOFU: Stages 1–2</div>
+      <div class="legend-dot"><div class="dot dot-gold"></div>MOFU: Stages 3–4</div>
+      <div class="legend-dot"><div class="dot dot-red"></div>BOFU: Stage 5</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- EMAIL / MARKETO -->
+<section style="background:var(--off-white);">
+  <div class="container">
+    <div class="section-label">Email Marketing</div>
+    <h2 class="section-title">Marketo Nurture Streams</h2>
+    <p class="section-sub">Structured email sequences mapped to each funnel stage.</p>
+    <div class="email-cols">
+      <div class="email-col">
+        <div class="email-stage-label"><div class="dot dot-blue"></div>TOFU</div>
+        <h3>Awareness Emails</h3>
+        <p>Purpose: Drive traffic to the Cost of Inaction white paper, blogs, and awareness content</p>
+        <ul class="email-list">
+          <li>Industry pain point emails</li>
+          <li>Cost of Inaction report promotion emails</li>
+          <li>Awareness campaign announcements</li>
+        </ul>
+        <div class="trigger-text">Trigger: New audience entry / LinkedIn ad click</div>
+      </div>
+      <div class="email-col">
+        <div class="email-stage-label"><div class="dot dot-gold"></div>MOFU</div>
+        <h3>Nurture Stream</h3>
+        <p>Purpose: Engage leads with biweekly educational content on the cost of delayed capital planning</p>
+        <ul class="email-list">
+          <li>White paper delivery emails</li>
+          <li>Blog promotion emails (4-part series)</li>
+          <li>Solution explainer emails</li>
+          <li>Re-engagement emails</li>
+        </ul>
+        <div class="trigger-text">Trigger: Engaged leads (email open / content download)</div>
+      </div>
+      <div class="email-col">
+        <div class="email-stage-label"><div class="dot dot-red"></div>BOFU</div>
+        <h3>Conversion Emails</h3>
+        <p>Purpose: Convert qualified leads to demo requests or sales conversations</p>
+        <ul class="email-list">
+          <li>ROI calculator emails</li>
+          <li>Demo invitation emails</li>
+          <li>Regional ABM emails</li>
+          <li>Executive brief delivery</li>
+        </ul>
+        <div class="trigger-text">Trigger: Qualified leads (MQL threshold reached)</div>
+      </div>
+    </div>
+    <div class="email-note">📌 Activation of these email nurture streams is to be decided by regional teams. All Marketo templates will be available in the campaign SharePoint folder once confirmed. Coordinate with your regional marketing lead for localization and timing.</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CAMPAIGN CALENDAR -->
+<section id="calendar">
+  <div class="container">
+    <div class="section-label">Campaign Timeline</div>
+    <h2 class="section-title">Campaign Calendar</h2>
+    <p class="section-sub">Scheduled activations across platforms for 2026.</p>
+    <table class="cal-table">
+      <thead>
+        <tr><th>Date</th><th>Platform</th><th>Campaign / Content</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>5/02/2026</td><td><span class="tag tag-website">WEBSITE</span><span class="tag tag-linkedin">LINKEDIN</span></td><td>Blog 01 — The Cost of Inaction: Why Standing Still is the Riskiest Decision You Can Make</td></tr>
+        <tr><td>10/02/2026</td><td><span class="tag tag-linkedin">LINKEDIN</span></td><td>Cost of Inaction — Carousel 01</td></tr>
+        <tr><td>February – December 2026</td><td><span class="tag tag-linkedin">LINKEDIN</span></td><td>Paid Social — Website Visit</td></tr>
+        <tr><td>February – December 2026</td><td><span class="tag tag-demandbase">DEMANDBASE</span></td><td>Programmatic display ads</td></tr>
+        <tr><td>02/03/2026</td><td><span class="tag tag-website">WEBSITE</span><span class="tag tag-linkedin">LINKEDIN</span></td><td>Blog 02 — Why spreadsheets are silently costing you Millions</td></tr>
+        <tr><td>10/03/2026</td><td><span class="tag tag-linkedin">LINKEDIN</span></td><td>Blog 02 — Carousel 02</td></tr>
+        <tr><td>02/04/2026</td><td><span class="tag tag-website">WEBSITE</span><span class="tag tag-linkedin">LINKEDIN</span></td><td>Blog 03 — Risk, Resilience, and the High Price of Waiting Too Long</td></tr>
+        <tr><td>29/04/2026</td><td><span class="tag tag-linkedin">LINKEDIN</span></td><td>Blog 03 — Carousel 03</td></tr>
+        <tr><td>04/05/2026</td><td><span class="tag tag-website">WEBSITE</span><span class="tag tag-linkedin">LINKEDIN</span></td><td>Blog 04 — The Financial Case for Acting Now</td></tr>
+        <tr><td>10/05/2026</td><td><span class="tag tag-linkedin">LINKEDIN</span></td><td>Blog 04 — Carousel 04</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REGIONAL ACTIVATION -->
+<section id="regional" style="background:var(--off-white);">
+  <div class="container">
+    <div class="section-label">Regional Guidance</div>
+    <h2 class="section-title">Regional Activation Guidelines</h2>
+    <p class="section-sub">Adapt and activate the campaign across your region.</p>
+    <div class="region-grid">
+      <div class="region-card">
+        <h3>Europe</h3>
+        <div class="region-focus">Key focus: Regulatory compliance, ESG reporting mandates, board confidence and audit readiness (primary region for Cost of Inaction campaign)</div>
+        <ul class="region-list">
+          <li>Cost of Inaction White Paper (gated) — primary CTA across LinkedIn and Demandbase</li>
+          <li>Blog Series (4 articles) + LinkedIn Carousels</li>
+          <li>Always-On Paid LinkedIn + Demandbase Programmatic Display</li>
+          <li>Marketo Lead Nurture Stream (6 emails)</li>
+          <li>Executive Brief (2nd/3rd email attachment)</li>
+        </ul>
+        <div class="region-tip">Local tip: Localize email nurture sequences for key markets (UK, DACH, Nordics)</div>
+      </div>
+      <div class="region-card">
+        <h3>APJMEA</h3>
+        <div class="region-focus">Key focus: Capital planning modernization, infrastructure investment growth, digital transformation</div>
+        <ul class="region-list">
+          <li>Cost of Inaction White Paper and Blog Series</li>
+          <li>LinkedIn Organic + Paid Social</li>
+          <li>Adapted Marketo nurture sequences</li>
+          <li>Regional case studies</li>
+        </ul>
+        <div class="region-tip">Local tip: Adapt messaging for regional investment priorities and sustainability goals</div>
+      </div>
+      <div class="region-card">
+        <h3>AMER</h3>
+        <div class="region-focus">Key focus: Capital efficiency, ROI justification, reducing operational risk from manual planning</div>
+        <ul class="region-list">
+          <li>Cost of Inaction White Paper and Executive Brief</li>
+          <li>ROI tools and Impact Estimator</li>
+          <li>Regional ABM alongside sales for key accounts</li>
+          <li>Demo CTAs and qualified meetings</li>
+        </ul>
+        <div class="region-tip">Local tip: Leverage ABM alongside sales for key accounts</div>
+      </div>
+    </div>
+    <div class="region-note">📌 All regional teams should coordinate with Global Marketing for asset localization and campaign alignment.</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ASSET LINKS -->
+<section id="assets">
+  <div class="container">
+    <div class="section-label">Internal Asset Library</div>
+    <h2 class="section-title">Campaign Assets &amp; Resources</h2>
+    <p class="section-sub">All materials organized for marketing and sales enablement teams. Access via SharePoint.</p>
+    <div class="assets-grid">
+      <a href="https://ifs.sharepoint.com/:f:/r/sites/CPLF_-marketing/Campaigns/2026/Always%20On/Cost%20Of%20Inaction?csf=1&web=1&e=ydfRdR" target="_blank" class="asset-link">
+        <div class="asset-icon">🗂️</div><div><div class="asset-text">Campaign Hub</div><div class="asset-sub">Full campaign folder</div></div>
+      </a>
+      <a href="https://ifs.sharepoint.com/:f:/r/sites/CPLF_-marketing/Campaigns/2026/Always%20On/Cost%20Of%20Inaction/Assets/White%20Paper?csf=1&web=1&e=G7K3hL" target="_blank" class="asset-link">
+        <div class="asset-icon">📄</div><div><div class="asset-text">Whitepaper Assets</div><div class="asset-sub">Design &amp; copy files</div></div>
+      </a>
+      <a href="https://ifs.sharepoint.com/:f:/r/sites/CPLF_-marketing/Campaigns/2026/Always%20On/Cost%20Of%20Inaction/Assets/Blogs?csf=1&web=1&e=YsdLtc" target="_blank" class="asset-link">
+        <div class="asset-icon">✍️</div><div><div class="asset-text">Blog Assets</div><div class="asset-sub">Copy &amp; imagery</div></div>
+      </a>
+      <a href="https://ifs.sharepoint.com/:f:/r/sites/CPLF_-marketing/Campaigns/2026/Always%20On/Cost%20Of%20Inaction/Landing%20Pages?csf=1&web=1&e=qO0S4s" target="_blank" class="asset-link">
+        <div class="asset-icon">🌐</div><div><div class="asset-text">Landing Pages</div><div class="asset-sub">Web-ready files</div></div>
+      </a>
+      <a href="https://ifs.sharepoint.com/:f:/r/sites/CPLF_-marketing/Campaigns/2026/Always%20On/Cost%20Of%20Inaction/Assets/Brochures?csf=1&web=1&e=xvphkH" target="_blank" class="asset-link">
+        <div class="asset-icon">📑</div><div><div class="asset-text">Brochures</div><div class="asset-sub">Sales enablement PDFs</div></div>
+      </a>
+      <a href="https://ifs.sharepoint.com/:f:/r/sites/CPLF_-marketing/Campaigns/2026/Always%20On/Cost%20Of%20Inaction/LinkedIn?csf=1&web=1&e=QoSvN4" target="_blank" class="asset-link">
+        <div class="asset-icon">💼</div><div><div class="asset-text">LinkedIn Assets</div><div class="asset-sub">Social imagery &amp; copy</div></div>
+      </a>
+      <a href="https://ifs.sharepoint.com/:f:/r/sites/CPLF_-marketing/Campaigns/2026/Always%20On/Cost%20Of%20Inaction/Marketo?csf=1&web=1&e=e2Uyca" target="_blank" class="asset-link">
+        <div class="asset-icon">📧</div><div><div class="asset-text">Marketo Assets</div><div class="asset-sub">Email nurture sequences</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- NARRATIVE -->
+<section class="narrative">
+  <div class="narrative-inner">
+    <blockquote>"The cost of inaction is not zero. It is measured in <strong>rising risk</strong>, <strong>wasted capital</strong>, <strong>missed targets</strong>, and <strong>eroding trust</strong>. Organizations that delay are not standing still — they are <strong>choosing to fall behind</strong>."</blockquote>
+    <p class="kicker">IFS Copperleaf transforms that risk into clarity, confidence, and action.</p>
+    <a href="https://www.copperleaf.com/knowledge-hub/cost-of-delaying-asset-investment-planning/" target="_blank" class="btn-primary" style="font-size:1rem;padding:16px 40px;">Download the Whitepaper</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo"><div class="nav-logo-icon" style="width:24px;height:24px;"></div> IFS <span>Copperleaf</span> — Cost of Inaction Campaign 2026</div>
+    <p>Internal use only · IFS Marketing</p>
+  </div>
+</footer>
+
+<script>
+  function showPersona(id, btn) {
+    document.querySelectorAll('.persona-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.persona-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+
+</div><!-- /page-content -->
+
+<script>
+  (function() {
+    var CORRECT_PASSWORD = "Cost of Inaction";
+    var gate = document.getElementById('password-gate');
+    var content = document.getElementById('page-content');
+    var input = document.getElementById('password-input');
+    var button = document.getElementById('password-submit');
+    var error = document.getElementById('password-error');
+
+    function tryUnlock() {
+      if (input.value === CORRECT_PASSWORD) {
+        sessionStorage.setItem('coi-unlocked', 'true');
+        gate.style.display = 'none';
+        content.style.display = 'block';
+      } else {
+        error.style.display = 'block';
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    if (sessionStorage.getItem('coi-unlocked') === 'true') {
+      gate.style.display = 'none';
+      content.style.display = 'block';
+    } else {
+      input.focus();
+    }
+
+    button.addEventListener('click', tryUnlock);
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') tryUnlock();
+    });
+  })();
+</script>
+</body>
+</html>
